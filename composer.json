@@ -20,6 +20,7 @@
         "PHP": "^7.0|^8.0",
         "kornrunner/keccak": "^1.0",
         "simplito/elliptic-php": "^1.0",
-        "guzzlehttp/guzzle": "^6.0|^7.0"
+        "guzzlehttp/guzzle": "^6.0|^7.0",
+        "web3p/ethereum-tx": "dev-master"
     }
 }

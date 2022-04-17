@@ -779,7 +779,7 @@ class Web3
                 'id' => $this->requestId++,
             ]
         ];
-        $res = $this->client->post('', $data);
+        $res = $this->client->post($this->url, $data);
         $body = json_decode($res->getBody());
         if (isset($body->error) && !empty($body->error)) {
             throw new \Exception($body->error->message . " [Method] {$method}", $body->error->code);

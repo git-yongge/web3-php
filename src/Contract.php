@@ -3,6 +3,15 @@
 namespace Web3;
 
 use kornrunner\Keccak;
+use Web3\Contracts\Ethabi;
+use Web3\Contracts\Types\Address;
+use Web3\Contracts\Types\Boolean;
+use Web3\Contracts\Types\Bytes;
+use Web3\Contracts\Types\DynamicBytes;
+use Web3\Contracts\Types\Integer;
+use Web3\Contracts\Types\Str;
+use Web3\Contracts\Types\Uinteger;
+use Web3p\EthereumTx\Transaction;
 
 class Contract
 {
@@ -98,17 +107,25 @@ class Contract
     /**
      * @throws \Exception
      */
-    public function send(Wallet $wallet, $function, array $param, $config = [])
+    public function send(Wallet $wallet, $function, array $param, $config = [], $val = "0x0")
     {
 
-        $data = $this->getData($function, $param, $wallet->getAddress());
-        $data['gas'] = dechex(hexdec(
-                $this->web3->estimateGas($data['to'], $data['data'], $data['from'], null, $data['value']
-                )) * 1.5);
+        $data = $this->getData($function, $param, $wallet->getAddress(), $val);
+
+        $data['gas'] = dechex(hexdec($this->web3->estimateGas($data['to'], $data['data'], $data['from'], "", $data['value'])) * 1.5);
+        $data['gas'] = "0x394e3";
+        echo "gas==>" . $data['gas'];
+
         $data['gasPrice'] = $this->web3->gasPrice();
+        echo "<br/>";
+        echo "price==>" . $data['gasPrice'];
+
         $data['nonce'] = $this->web3->getTransactionCount($wallet->getAddress(), 'pending');
+        echo "<br/>";
+        echo "nonce==>" . $data['nonce'];
+
         unset($data['from']);
-//        $chainId = $this->web3->chainId();
+        $data['chainId'] = $this->web3->chainId();
         $data = array_merge([
             'nonce' => '01',
             'gasPrice' => '',
@@ -117,13 +134,27 @@ class Contract
             'value' => '',
             'data' => '',
         ], $data);
-        $signature = $wallet->sign(Utils::rawEncode($data));
-        $chainId = 0;
-        $data['v'] = dechex($signature->recoveryParam + 27 + ($chainId ? $chainId * 2 + 8 : 0));
-        $data['r'] = $signature->r->toString('hex');
-        $data['s'] = $signature->s->toString('hex');
-        $signRaw = Utils::add0x(Utils::rawEncode($data));
-        return $this->web3->sendRawTransaction($signRaw);
+
+        echo "<br/>";
+        print_r($data);
+
+        $transaction = new Transaction([
+            'nonce' => $data['nonce'],
+            'from' => $wallet->getAddress(),
+            'to' => $data['to'],
+            'gas' => $data['gas'],
+            'gasPrice' => $data['gasPrice'],
+            'value' => $data['value'],
+            'chainId' => $data['chainId'],
+            'data' => $data['data']
+        ]);
+
+        $signedTransaction = $transaction->sign($wallet->getPrivateKey());
+        $signedTransaction = Utils::add0x($signedTransaction);
+        echo "<br/>";
+        echo "sign==>" . $signedTransaction;
+
+        return $this->web3->sendRawTransaction($signedTransaction);
     }
 
     /**
@@ -133,7 +164,7 @@ class Contract
      * @return array
      * @throws \Exception
      */
-    private function getData($function, $param, $from = null): array
+    private function getData($function, $param, $from = null, $val="0x0"): array
     {
         if (!array_key_exists($function, $this->function)) {
             throw new \Exception(" function not in contract ");
@@ -144,7 +175,7 @@ class Contract
         }
         $data = [
             'to' => $this->address,
-            'value' => '0x0'
+            'value' => $val
         ];
         if (!empty($from)) {
             $data['from'] = $from;

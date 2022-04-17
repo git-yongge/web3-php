@@ -1,0 +1,13 @@
+1. 安装phpstudy 到 E:\phpstudy_pro\
+2. 将cacert.pem 放到 E:\phpstudy_pro\wamp64 下
+3. 更改php.ini文件，打开phpstudy页面：设置-> 配置文件 -> 点击php7.3.4nts
+4. 更改php.ini
+curl.cainfo="E:/phpstudy_pro/wamp64/cacert.pem"
+openssl.cafile="E:/phpstudy_pro/wamp64/cacert.pem"
+5. 重启NGINX;打开phpstudy页面：首页 -> 套件 Nginx条目点击重启；
+6. 将web3-php.zip解压放到 E:\phpstudy_pro\WWW 目录下
+7. 以太坊测试浏览器执行 http://localhost/web3-php/eth-test.php
+8. 马蹄链测试浏览器执行 http://localhost/web3-php/polygon-test.php
+
+// 因已经用composer install生成vendor目录，即不用安装composer
+// 如果安装，则执行composer安装文件，安装后在项目根目录执行 composer install
